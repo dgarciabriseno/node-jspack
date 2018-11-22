@@ -252,9 +252,16 @@ function JSPack() {
         case 'c': case 'b': case 'B': case 'h': case 'H':
         case 'i': case 'I': case 'l': case 'L': case 'f': case 'd': case 'q': case 'Q':
           el = this._elLut[m[2]];
-          if ((i + n) > values.length) { return false; }
-          this._PackSeries(n, s, a, p, values, i);
-          i += n;
+          if (n > 1 && Array.isArray(values[i])) {
+            // Value series is array, iterate through that, only increment by 1
+            if ((i + 1) > values.length) { return false; }
+            this._PackSeries(n, s, a, p, values[i], 0);
+            i += 1;
+          } else {
+            if ((i + n) > values.length) { return false; }
+            this._PackSeries(n, s, a, p, values, i);
+            i += n;
+          }
           break;
         case 'x':
           for (j = 0; j < n; j++) { a[p + j] = 0; }
