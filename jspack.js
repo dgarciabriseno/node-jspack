@@ -206,22 +206,26 @@ function JSPack() {
     var m, n, s;
     var rv = [];
     while (m = re.exec(fmt)) {
-
       n = ((m[1]  == undefined) || (m[1] == '')) ? 1 : parseInt(m[1]);
       s = this._lenLut[m[2]];
       if ((p + n * s) > a.length) {
-
         return undefined;
       }
       switch (m[2]) {
-
         case 'A': case 's':
           rv.push(this._elLut[m[2]].de(a, p, n));
           break;
         case 'c': case 'b': case 'B': case 'h': case 'H':
         case 'i': case 'I': case 'l': case 'L': case 'f': case 'd': case 'q': case 'Q':
           el = this._elLut[m[2]];
-          rv.push(this._UnpackSeries(n, s, a, p));
+          if (n > 1) {
+            // Field is array, unpack into separate array and push as such
+            var arr = [];
+            arr.push(this._UnpackSeries(n, s, a, p));
+            rv.push(arr);
+          } else {
+            rv.push(this._UnpackSeries(n, s, a, p));
+          }
           break;
       }
       p += n * s;
