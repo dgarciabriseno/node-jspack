@@ -209,7 +209,8 @@ function JSPack() {
       n = ((m[1]  == undefined) || (m[1] == '')) ? 1 : parseInt(m[1]);
       s = this._lenLut[m[2]];
       if ((p + n * s) > a.length) {
-        return undefined;
+        // We break here and return what we have already (or an empty array if this happens in the first iteration)
+        break;
       }
       switch (m[2]) {
         case 'A': case 's':
