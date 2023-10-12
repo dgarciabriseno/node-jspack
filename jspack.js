@@ -39,6 +39,16 @@ function JSPack() {
     return rv;
   };
 
+  m._DeBigInt = function (a, p) {
+    var lsb = bBE ? (el.len - 1) : 0;
+    var nsb = bBE ? -1 : 1;
+    var stop = lsb + nsb * el.len;
+    var rv, i, f;
+    for (rv = 0n, i = lsb, f = 1n; i != stop; rv += (BigInt(a[p + i]) * f), i += nsb, f *= 256n) { }
+    if (el.bSigned && (rv & (2n ** (BigInt(el.len) * 8n) - 1n))) { rv -= 2n ** (BigInt(el.len) * 8n); }
+    return rv;
+  };
+
   m._EnInt = function (a, p, v) {
     var lsb = bBE ? (el.len - 1) : 0;
     var nsb = bBE ? -1 : 1;
@@ -46,6 +56,15 @@ function JSPack() {
     var i;
     v = (v < el.min) ? el.min : (v > el.max) ? el.max : v;
     for (i = lsb; i != stop; a[p + i] = v & 0xff, i += nsb, v >>= 8) { }
+  };
+
+  m._EnBigInt = function (a, p, v) {
+    var lsb = bBE ? (el.len - 1) : 0;
+    var nsb = bBE ? -1 : 1;
+    var stop = lsb + nsb * el.len;
+    var i;
+    v = (v < el.min) ? el.min : (v > el.max) ? el.max : v;
+    for (i = lsb; i != stop; a[p + i] = Number(BigInt(v) & 0xffn), i += nsb, v = BigInt(v) >> 8n) { }
   };
 
   // ASCII character strings
@@ -140,30 +159,6 @@ function JSPack() {
     a[p + i - d] |= s * 128;
   };
 
-  // Convert int64 to array with 3 elements: [lowBits, highBits, unsignedFlag]
-  // '>>>' trick to convert signed 32bit int to unsigned int (because << always results in a signed 32bit int)
-  m._DeInt64 = function (a, p) {
-    var start = bBE ? 0 : 7;
-    var nsb = bBE ? 1 : -1;
-    var stop = start + nsb * 8;
-    var rv = [0, 0, !el.bSigned];
-    var i, f, rvi;
-    for (i = start, rvi = 1, f = 0;
-      i != stop;
-      rv[rvi] = (((rv[rvi] << 8) >>> 0) + a[p + i]), i += nsb, f++, rvi = (f < 4 ? 1 : 0)) {}
-    return rv;
-  };
-
-  m._EnInt64 = function (a, p, v) {
-    var start = bBE ? 0 : 7;
-    var nsb = bBE ? 1 : -1;
-    var stop = start + nsb * 8;
-    var i, f, rvi, s;
-    for (i = start, rvi = 1, f = 0, s = 24;
-      i != stop;
-      a[p + i] = v[rvi] >> s & 0xff, i += nsb, f++, rvi = (f < 4 ? 1 : 0), s = 24 - (8 * (f % 4))) { }
-  };
-
   // Class data
   m._sPattern = '(\\d+)?([AxcbBhHsfdiIlLqQ])';
   m._lenLut = {'A': 1, 'x': 1, 'c': 1, 'b': 1, 'B': 1, 'h': 2, 'H': 2, 's': 1,
@@ -182,8 +177,8 @@ function JSPack() {
         'L': {en: m._EnInt, de: m._DeInt, len: 4, bSigned: false, min: 0, max: Math.pow(2, 32) - 1},
         'f': {en: m._En754, de: m._De754, len: 4, mLen: 23, rt: Math.pow(2, -24) - Math.pow(2, -77)},
         'd': {en: m._En754, de: m._De754, len: 8, mLen: 52, rt: 0},
-        'q': {en: m._EnInt64, de: m._DeInt64, bSigned: true},
-        'Q': {en: m._EnInt64, de: m._DeInt64, bSigned: false}};
+        'q': {en: m._EnBigInt, de: m._DeBigInt, len: 8, bSigned: true, min: -(2n ** 63n), max: (2n ** 63n) - 1n},
+        'Q': {en: m._EnBigInt, de: m._DeBigInt, len: 8, bSigned: false, min: 0, max: 2n ** 64n}};
 
   // Unpack a series of n elements of size s from array a at offset p with fxn
   m._UnpackSeries = function (n, s, a, p) {
