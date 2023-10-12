@@ -1,12 +1,12 @@
 {
   "author": "https://github.com/pgriess",
   "name": "jspack",
-  "description": "JavaScript library to pack primitives to octet arrays, including int64 support, packaged for NodeJS.",
-  "version": "0.0.7",
-  "homepage": "https://github.com/birchroad/node-jspack",
+  "description": "JavaScript library to pack primitives to octet arrays, including BigInt support, packaged for NodeJS.",
+  "version": "1.0.0",
+  "homepage": "https://github.com/dgarciabriseno/node-jspack",
   "repository": {
     "type": "git",
-    "url": "git://github.com/birchroad/node-jspack.git"
+    "url": "git://github.com/dgarciabriseno/node-jspack.git"
   },
   "main": "./jspack.js",
   "maintainers": [
@@ -18,6 +18,10 @@
     {
       "name": "Andreas Antener",
       "web": "https://github.com/AndreasAntener/node-jspack"
+    },
+    {
+      "name": "Daniel Garcia Briseno",
+      "web": "https://github.com/dgarciabriseno/node-jspack"
     }
   ],
   "devDependencies": {
